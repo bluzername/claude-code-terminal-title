@@ -29,56 +29,54 @@ This skill solves that by automatically updating your terminal title to reflect 
 
 ## Installation
 
-### Automated Install & Test (Recommended)
+### Quick Install (Recommended)
 
 ```bash
 # Clone this repository
 git clone https://github.com/bluzername/claude-code-terminal-title.git
 cd claude-code-terminal-title
 
-# Run the installation script
+# Run the automated installer
 chmod +x install-and-test.sh
 ./install-and-test.sh
 ```
 
-The script will:
+The installer will:
+- ✅ Check prerequisites
 - ✅ Install the skill to `~/.claude/skills/`
 - ✅ Set proper file permissions
-- ✅ Run 6 verification tests
-- ✅ Show real-time feedback
+- ✅ Run verification tests
 - ✅ Provide next steps
 
-### Quick Install (Claude Code CLI)
+### Alternative Installation Methods
 
+**Claude Code CLI:**
 ```bash
-# Download terminal-title.skill, then:
 claude-code install terminal-title.skill
 ```
 
-### Manual Install
-
+**Manual Install:**
 ```bash
-# Create skills directory
 mkdir -p ~/.claude/skills
-
-# Extract the skill
 unzip terminal-title.skill -d ~/.claude/skills/
-
-# Make script executable
 chmod +x ~/.claude/skills/terminal-title/scripts/set_title.sh
 ```
 
-### Additional Setup (macOS Terminal.app Users)
+### macOS Terminal.app Setup
 
-If you're using macOS Terminal.app with zsh, run the setup script to ensure clean titles:
-
+For clean titles without suffixes, run:
 ```bash
-cd claude-code-terminal-title
 chmod +x setup-zsh.sh
 ./setup-zsh.sh
 ```
 
-This configures your `~/.zshrc` and disables Terminal.app's automatic title suffixes (e.g., " – -zsh – 80x24"). Changes take effect in NEW terminal windows.
+### Uninstall
+
+To remove the skill:
+```bash
+chmod +x uninstall.sh
+./uninstall.sh
+```
 
 ## Usage
 

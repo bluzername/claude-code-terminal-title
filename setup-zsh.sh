@@ -62,7 +62,30 @@ update_terminal_cwd() {
             else
                 # New shell session - check if title is fresh (< 5 minutes)
                 local current_time=$(date +%s)
-                local file_time=$(stat -f %m "$title_file" 2>/dev/null || stat -c %Y "$title_file" 2>/dev/null)
+                local file_time
+                
+                # Detect OS and use appropriate stat command
+                if [[ "$OSTYPE" == "darwin"* ]]; then
+                    file_time=$(stat -f %m "$title_file" 2>/dev/null)
+                elif [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "linux"* ]]; then
+                    file_time=$(stat -c %Y "$title_file" 2>/dev/null)
+                else
+                    # Fallback: use find for modification time
+                    file_time=$(find "$title_file" -printf '%T@' 2>/dev/null | cut -d. -f1)
+                    if [[ -z "$file_time" ]]; then
+                        # Last resort: try ls -T (BSD) or ls --time-style (GNU)
+                        file_time=$(ls -T "$title_file" 2>/dev/null | awk '{print $6" "$7" "$8}' | xargs -I {} date -j -f "%b %d %H:%M:%S" "{}" +%s 2>/dev/null || \
+                                   ls -l --time-style=+%s "$title_file" 2>/dev/null | awk '{print $6}' 2>/dev/null)
+                    fi
+                fi
+                
+                # If we can't get file time, assume it's stale and skip
+                if [[ -z "$file_time" ]] || ! [[ "$file_time" =~ ^[0-9]+$ ]]; then
+                    # Fallback: show current directory
+                    printf '\033]0;%s\007' "${PWD/#$HOME/~}"
+                    return
+                fi
+                
                 local age=$((current_time - file_time))
 
                 if [ $age -lt 300 ]; then
@@ -94,7 +117,12 @@ echo ""
 if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]; then
     echo "Configuring Terminal.app title settings..."
     PLIST="$HOME/Library/Preferences/com.apple.Terminal.plist"
-    PROFILE="Basic"
+    
+    # Try to detect active profile from Terminal preferences
+    PROFILE=$(defaults read com.apple.Terminal "Default Window Settings" 2>/dev/null || echo "Basic")
+    
+    # Allow override via environment variable
+    PROFILE="${TERMINAL_PROFILE:-${PROFILE}}"
 
     /usr/libexec/PlistBuddy -c "Set ':Window Settings:$PROFILE:ShowActiveProcessInTitle' false" "$PLIST" 2>/dev/null || \
         /usr/libexec/PlistBuddy -c "Add ':Window Settings:$PROFILE:ShowActiveProcessInTitle' bool false" "$PLIST" 2>/dev/null

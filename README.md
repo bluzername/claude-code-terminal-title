@@ -28,6 +28,7 @@ chmod +x install-and-test.sh
 ```
 
 This script will:
+- ✅ Check for required prerequisites (unzip, mkdir, chmod, bash)
 - ✅ Extract the skill to `~/.claude/skills/`
 - ✅ Set proper permissions
 - ✅ Run verification tests
@@ -52,6 +53,20 @@ unzip terminal-title.skill -d ~/.claude/skills/
 # Make script executable
 chmod +x ~/.claude/skills/terminal-title/scripts/set_title.sh
 ```
+
+### Uninstall
+
+To remove the skill completely:
+
+```bash
+chmod +x uninstall.sh
+./uninstall.sh
+```
+
+The uninstall script will:
+- Remove the skill directory
+- Optionally remove zsh configuration (with confirmation)
+- Optionally restore Terminal.app settings (with confirmation)
 
 ### Additional Setup (macOS Terminal.app Users)
 
