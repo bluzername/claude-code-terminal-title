@@ -69,9 +69,11 @@ The uninstall script will:
 - Optionally remove zsh configuration (with confirmation)
 - Optionally restore Terminal.app settings (with confirmation)
 
-### Additional Setup (macOS Terminal.app Users)
+### Additional Setup (Recommended for Title Persistence)
 
-If you're using macOS Terminal.app with zsh, run the setup script to ensure clean titles without unwanted prefixes/suffixes:
+For best results, especially for title persistence after `/clear` commands, run the appropriate setup script for your shell:
+
+**Zsh Users (macOS Terminal.app, Warp, iTerm2, etc.):**
 
 ```bash
 cd claude-code-terminal-title
@@ -79,12 +81,24 @@ chmod +x setup-zsh.sh
 ./setup-zsh.sh
 ```
 
-This script will:
-- ✅ Configure your `~/.zshrc` to preserve Claude titles
-- ✅ Disable Terminal.app's title suffixes (shell name, dimensions)
-- ✅ Create a backup of your `.zshrc` before making changes
+**Bash Users (Warp, Linux terminals, etc.):**
 
-**Why is this needed?** macOS Terminal.app by default appends " – -zsh – 80x24" to all window titles. This setup script automatically disables those additions so you get clean titles.
+```bash
+cd claude-code-terminal-title
+chmod +x setup-bash.sh
+./setup-bash.sh
+```
+
+These scripts will:
+- ✅ Configure your shell to preserve Claude titles across `/clear` commands
+- ✅ Add Warp Terminal support for title persistence
+- ✅ Disable Terminal.app's title suffixes (macOS only)
+- ✅ Create a backup of your shell config before making changes
+
+**Why is this needed?**
+- macOS Terminal.app appends " – -zsh – 80x24" to all window titles
+- Warp Terminal resets titles after `/clear` due to its block model
+- The setup scripts ensure titles persist correctly in all scenarios
 
 **Note:** Changes take effect in NEW terminal windows. You'll need to open a new window or tab after running the setup.
 
@@ -123,6 +137,7 @@ This produces titles like: `🤖 Claude | my-project | Build: Dashboard UI`
 ### Fully Tested & Working
 - ✅ macOS Terminal.app + zsh (with setup-zsh.sh)
 - ✅ iTerm2 (macOS)
+- ✅ Warp Terminal (with setup-zsh.sh or setup-bash.sh)
 
 ### Should Work (Not Extensively Tested)
 - ⚠️ Alacritty
@@ -132,9 +147,9 @@ This produces titles like: `🤖 Claude | my-project | Build: Dashboard UI`
 - ⚠️ Windows Terminal + WSL
 
 ### Known Limitations
-- ❌ Plain bash without precmd support (titles won't persist across prompts)
 - ❌ Windows native terminals (Command Prompt, PowerShell) - ANSI escape sequences not universally supported
 - ❌ Very old terminal emulators without ANSI support
+- ⚠️ Plain bash without setup - run `setup-bash.sh` for title persistence
 
 ### Session Behavior
 When you set a title in Terminal A and open Terminal B within 5 minutes, Terminal B will initially inherit Terminal A's title. Once Claude Code runs in Terminal B and sets a new title, each terminal will maintain its own title independently. This is by design - it prevents stale titles from appearing in new terminals while preserving titles within active sessions.
@@ -196,6 +211,20 @@ If your title shows something like "username - Your Title - -zsh - 80x24", run:
 
 Then open a NEW terminal window. See the "Additional Setup" section above for details.
 
+### Title Disappears After /clear? (Warp Terminal)
+
+Warp's block model resets titles after `/clear`. Run the appropriate setup script:
+
+```bash
+# For zsh users:
+./setup-zsh.sh
+
+# For bash users:
+./setup-bash.sh
+```
+
+Then open a NEW terminal window. The title will now persist after `/clear` commands.
+
 ### Title Too Generic?
 
 Be more specific in your prompts about what you want to accomplish
@@ -213,7 +242,7 @@ Be more specific in your prompts about what you want to accomplish
 - Windows Terminal + WSL - does the zsh config work?
 
 **Shell Support:**
-- bash users - can we add precmd equivalent for bash?
+- ✅ bash users - `setup-bash.sh` now available!
 - fish shell - title persistence implementation?
 - Other shells?
 

@@ -57,3 +57,9 @@ case "$TERM" in
         printf '\033]0;%s\007' "$FINAL_TITLE" 2>/dev/null
         ;;
 esac
+
+# Warp Terminal: Also send OSC 2 (window title only) as additional signal
+# This helps Warp properly register the title change
+if [[ "$TERM_PROGRAM" == "WarpTerminal" ]]; then
+    printf '\033]2;%s\007' "$FINAL_TITLE" 2>/dev/null
+fi

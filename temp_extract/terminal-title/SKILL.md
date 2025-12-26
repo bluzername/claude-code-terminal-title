@@ -2,7 +2,7 @@
 name: terminal-title
 description: Automatically updates terminal window title to reflect the current high-level task. Use at the start of every Claude Code session when the user provides their first prompt, and whenever the user switches to a distinctly new high-level task. Helps developers manage multiple Claude Code terminals by providing clear, at-a-glance identification of what each terminal is working on.
 min_claude_code_version: "1.0.0"
-version: "1.1.0"
+version: "1.2.0"
 ---
 
 # Terminal Title
@@ -103,10 +103,19 @@ bash scripts/set_title.sh "Test: Payment Module"
 The `scripts/set_title.sh` script uses ANSI escape sequences to set the terminal title. It's compatible with:
 - macOS Terminal
 - iTerm2
+- Warp Terminal
 - Alacritty
 - Most modern terminal emulators (xterm, rxvt, screen, tmux)
 
 The script accepts a single argument (the title string) and exits silently if no title is provided (fail-safe behavior).
+
+## Terminal-Specific Notes
+
+### Warp Terminal
+Warp uses a unique block model that can reset terminal titles after `/clear` operations. The skill includes special handling:
+- Detects Warp via `$TERM_PROGRAM == "WarpTerminal"`
+- Uses precmd hooks to restore titles after `/clear`
+- Users should run `setup-zsh.sh` or `setup-bash.sh` for full persistence
 
 ## Optional Customization
 
