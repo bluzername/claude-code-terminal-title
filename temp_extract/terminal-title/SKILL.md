@@ -108,6 +108,16 @@ The `scripts/set_title.sh` script uses ANSI escape sequences to set the terminal
 
 The script accepts a single argument (the title string) and exits silently if no title is provided (fail-safe behavior).
 
+## Auto-Approval
+
+The install script automatically configures Claude Code to run this skill without asking for permission each time. This is done by adding the following to `~/.claude/settings.local.json`:
+
+```json
+"Bash(bash *set_title.sh*)"
+```
+
+This ensures a seamless experience where titles update silently in the background.
+
 ## Optional Customization
 
 Users can optionally customize terminal titles with a prefix by setting the `CLAUDE_TITLE_PREFIX` environment variable:

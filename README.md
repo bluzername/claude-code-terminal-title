@@ -32,6 +32,7 @@ This script will:
 - ✅ Check for required prerequisites (unzip, mkdir, chmod, bash)
 - ✅ Extract the skill to `~/.claude/skills/`
 - ✅ Set proper permissions
+- ✅ Configure auto-approval so Claude Code won't ask permission for title changes
 - ✅ Run verification tests
 - ✅ Show you the results in real-time
 
@@ -185,6 +186,22 @@ Your terminal may not support ANSI escape sequences. Try:
 - Restart Claude Code after installation
 - Verify SKILL.md is properly formatted (YAML front matter at top)
 - Check Claude Code version supports skills
+
+### Claude Code Asks for Permission?
+
+If Claude Code asks for approval before setting the terminal title, you need to add the auto-approval permission. The install script does this automatically, but if you installed manually, add this to `~/.claude/settings.local.json`:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash *set_title.sh*)"
+    ]
+  }
+}
+```
+
+Or if the file already exists, add `"Bash(bash *set_title.sh*)"` to the existing `allow` array.
 
 ### Title Shows Unwanted Prefix or Suffix? (macOS Terminal.app)
 
