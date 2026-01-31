@@ -2,9 +2,12 @@
 # Set terminal window title
 # Usage: ./set_title.sh "Your Title Here"
 #
-# Optional: Set CLAUDE_TITLE_PREFIX environment variable for custom prefix
-# Example: export CLAUDE_TITLE_PREFIX="🤖 Claude"
-#          Results in: "🤖 Claude | Your Title"
+# The script automatically prefixes the title with the current directory name
+# (usually the repo/project name) for easy identification across multiple terminals.
+#
+# Optional: Set CLAUDE_TITLE_PREFIX environment variable for additional custom prefix
+# Example: export CLAUDE_TITLE_PREFIX="🤖"
+#          Results in: "🤖 my-project | Your Title"
 
 # Exit silently if no title provided (fail-safe behavior)
 if [ -z "$1" ]; then
@@ -20,17 +23,20 @@ if [ -z "$TITLE" ]; then
     exit 0
 fi
 
-# Build the final title with optional prefix
+# Get the current directory name (usually the repo/project name)
+DIR_NAME=$(basename "$PWD")
+
+# Build the final title with directory prefix and optional custom prefix
 if [ -n "$CLAUDE_TITLE_PREFIX" ]; then
     # Sanitize prefix as well
-    PREFIX=$(echo "$CLAUDE_TITLE_PREFIX" | tr -d '\000-\037' | head -c 40)
+    PREFIX=$(echo "$CLAUDE_TITLE_PREFIX" | tr -d '\000-\037' | head -c 20)
     if [ -n "$PREFIX" ]; then
-        FINAL_TITLE="${PREFIX} | ${TITLE}"
+        FINAL_TITLE="${PREFIX} ${DIR_NAME} | ${TITLE}"
     else
-        FINAL_TITLE="${TITLE}"
+        FINAL_TITLE="${DIR_NAME} | ${TITLE}"
     fi
 else
-    FINAL_TITLE="${TITLE}"
+    FINAL_TITLE="${DIR_NAME} | ${TITLE}"
 fi
 
 # Store the title in a file that shell hooks can read

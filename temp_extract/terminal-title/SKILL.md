@@ -47,6 +47,10 @@ Automatically sets descriptive terminal window titles based on the task Claude i
 - "Build: Dashboard UI"
 - "Refactor: Payment Module"
 
+**Displayed as (with automatic folder prefix):**
+- `my-project | API Integration: Auth Flow`
+- `my-project | Fix: Login Bug`
+
 **Bad titles:**
 - Too long: "Implementing the new authentication system with OAuth2.0 support" (exceeds 40 chars)
 - Too generic: "Working" or "Coding"
@@ -56,6 +60,8 @@ Automatically sets descriptive terminal window titles based on the task Claude i
 ```
 [Action/Category]: [Specific Focus]
 ```
+
+The script automatically prefixes titles with the current directory name (usually the repo name) for easy identification across multiple terminals.
 
 Keep titles concise, actionable, and immediately recognizable.
 
@@ -108,16 +114,23 @@ The `scripts/set_title.sh` script uses ANSI escape sequences to set the terminal
 
 The script accepts a single argument (the title string) and exits silently if no title is provided (fail-safe behavior).
 
-## Optional Customization
+## Automatic Directory Prefix
 
-Users can optionally customize terminal titles with a prefix by setting the `CLAUDE_TITLE_PREFIX` environment variable:
+The script automatically prefixes all titles with the current directory name (usually the repo/project name). This makes it easy to identify which project each terminal is working on:
 
-```bash
-export CLAUDE_TITLE_PREFIX="🤖 Claude"
+```
+my-project | Build: Dashboard UI
+another-repo | Debug: Auth API
 ```
 
-This produces titles like: `🤖 Claude | Build: Dashboard UI`
+## Optional Custom Prefix
 
-Without the prefix, titles remain in the standard format: `Build: Dashboard UI`
+Users can optionally add an additional custom prefix by setting the `CLAUDE_TITLE_PREFIX` environment variable:
 
-**Note:** You don't need to check for this variable or modify your behavior. The script handles this automatically.
+```bash
+export CLAUDE_TITLE_PREFIX="🤖"
+```
+
+This produces titles like: `🤖 my-project | Build: Dashboard UI`
+
+**Note:** You don't need to check for these variables or modify your behavior. The script handles this automatically.
