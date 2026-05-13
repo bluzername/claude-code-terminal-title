@@ -87,10 +87,17 @@ Keep titles concise, actionable, and immediately recognizable.
 
 ## Implementation
 
-**Execute the title script:**
+**On macOS / Linux** — execute the bash script via the Bash tool:
 ```bash
 bash scripts/set_title.sh "Your Title Here"
 ```
+
+**On Windows** — execute the PowerShell script via the PowerShell tool:
+```powershell
+& "$env:USERPROFILE\.claude\skills\terminal-title\scripts\set_title.ps1" "Your Title Here"
+```
+
+Pick the script that matches the host OS. If unsure, the working directory's path style is a reliable hint (`/c/Users/...` or `C:\Users\...` → Windows).
 
 **Example workflow:**
 ```bash
@@ -106,11 +113,13 @@ bash scripts/set_title.sh "Test: Payment Module"
 
 ## Script Details
 
-The `scripts/set_title.sh` script uses ANSI escape sequences to set the terminal title. It's compatible with:
+`scripts/set_title.sh` (macOS / Linux) uses ANSI OSC escape sequences. Compatible with:
 - macOS Terminal
 - iTerm2
 - Alacritty
 - Most modern terminal emulators (xterm, rxvt, screen, tmux)
+
+`scripts/set_title.ps1` (Windows) uses the .NET `[Console]::Title` API (Win32 `SetConsoleTitle`). Compatible with Windows Terminal, Windows Console Host (conhost), and ConPTY-hosted terminals. The bash script's ANSI-escape approach does not work on Windows when invoked through Claude Code's Bash tool, because the tool strips control bytes from subprocess stdout before they can reach the host terminal — the PowerShell version bypasses stdout entirely by calling SetConsoleTitle on the inherited console.
 
 The script accepts a single argument (the title string) and exits silently if no title is provided (fail-safe behavior).
 

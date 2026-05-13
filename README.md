@@ -42,7 +42,7 @@ This script will:
 claude-code install terminal-title.skill
 ```
 
-### Manual Install
+### Manual Install (macOS / Linux)
 
 ```bash
 # Create skills directory if it doesn't exist
@@ -54,6 +54,21 @@ unzip terminal-title.skill -d ~/.claude/skills/
 # Make script executable
 chmod +x ~/.claude/skills/terminal-title/scripts/set_title.sh
 ```
+
+### Manual Install (Windows)
+
+```powershell
+# Create skills directory if it doesn't exist
+New-Item -ItemType Directory -Force "$env:USERPROFILE\.claude\skills" | Out-Null
+
+# Extract the skill
+Expand-Archive -Force terminal-title.skill "$env:USERPROFILE\.claude\skills\"
+
+# Quick smoke test — your Windows Terminal tab title should change
+& "$env:USERPROFILE\.claude\skills\terminal-title\scripts\set_title.ps1" "Test: Install OK"
+```
+
+The Windows version uses the .NET `[Console]::Title` API (Win32 `SetConsoleTitle`) rather than ANSI escape sequences, because Claude Code's Bash tool strips control bytes from subprocess stdout before they reach the host terminal. See the "Compatibility" section for details.
 
 ### Uninstall
 
@@ -123,6 +138,7 @@ This produces titles like: `🤖 Claude | my-project | Build: Dashboard UI`
 ### Fully Tested & Working
 - ✅ macOS Terminal.app + zsh (with setup-zsh.sh)
 - ✅ iTerm2 (macOS)
+- ✅ Windows Terminal + PowerShell (via the bundled `set_title.ps1`)
 
 ### Should Work (Not Extensively Tested)
 - ⚠️ Alacritty
@@ -130,11 +146,17 @@ This produces titles like: `🤖 Claude | my-project | Build: Dashboard UI`
 - ⚠️ GNOME Terminal (Linux)
 - ⚠️ Konsole (KDE)
 - ⚠️ Windows Terminal + WSL
+- ⚠️ Windows Console Host (conhost.exe) — PowerShell variant should work; not benchmarked
 
 ### Known Limitations
 - ❌ Plain bash without precmd support (titles won't persist across prompts)
-- ❌ Windows native terminals (Command Prompt, PowerShell) - ANSI escape sequences not universally supported
 - ❌ Very old terminal emulators without ANSI support
+
+### Windows: Why a Second Script?
+
+On Windows, the bash version's `printf '\033]0;...\007'` approach does **not** work when Claude Code invokes the script through its Bash tool, even though Windows Terminal itself fully supports OSC 0 title sequences. The reason is that Claude Code's Bash tool sanitizes control bytes from subprocess stdout before display, so the escape never reaches the host terminal.
+
+The Windows-specific `set_title.ps1` sidesteps this by calling `[Console]::Title = ...` (which wraps the Win32 `SetConsoleTitle` API). The hook PowerShell subprocess inherits Claude Code's console, so the title-set call hits the parent terminal directly without going through stdout.
 
 ### Session Behavior
 When you set a title in Terminal A and open Terminal B within 5 minutes, Terminal B will initially inherit Terminal A's title. Once Claude Code runs in Terminal B and sets a new title, each terminal will maintain its own title independently. This is by design - it prevents stale titles from appearing in new terminals while preserving titles within active sessions.
@@ -178,7 +200,20 @@ When you set a title in Terminal A and open Terminal B within 5 minutes, Termina
 Your terminal may not support ANSI escape sequences. Try:
 - **macOS:** Use iTerm2 or built-in Terminal.app
 - **Linux:** Use GNOME Terminal, Alacritty, or Kitty
-- **Windows:** Use Windows Terminal or WSL with a compatible terminal
+- **Windows:** Use the bundled `set_title.ps1` (PowerShell) rather than `set_title.sh` (bash). The bash version's escape-sequence approach is filtered by Claude Code's Bash tool on Windows.
+
+### Windows: Title Not Updating?
+
+1. **Verify the PowerShell script exists:**
+   ```powershell
+   Test-Path "$env:USERPROFILE\.claude\skills\terminal-title\scripts\set_title.ps1"
+   ```
+2. **Test manually from Windows Terminal:**
+   ```powershell
+   & "$env:USERPROFILE\.claude\skills\terminal-title\scripts\set_title.ps1" "Test: Manual"
+   # Your tab title should immediately show "<cwd> | Test: Manual"
+   ```
+3. **Confirm SKILL.md is dispatching to the .ps1, not the .sh.** Open `SKILL.md` and verify the Implementation section mentions the PowerShell path.
 
 ### Skill Not Triggering Automatically?
 
