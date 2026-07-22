@@ -4,6 +4,8 @@
 
 Automatically updates your terminal window title to reflect the current task Claude Code is working on. Perfect for developers managing multiple Claude Code instances across different terminals.
 
+**Herdr support:** when `HERDR_ENV=1` and `HERDR_PANE_ID` are set, the skill also renames the Herdr pane and publishes `pane.report-metadata` (`--title` / `--display-agent`) so the Herdr sidebar matches the outer terminal title.
+
 ## The Problem It Solves
 
 Running multiple Claude Code sessions? Constantly clicking between terminals trying to remember which one is handling your API integration vs database migration vs bug fix? This skill eliminates that frustration.
