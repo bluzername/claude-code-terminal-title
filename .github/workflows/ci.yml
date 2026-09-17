@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shellcheck
+        run: |
+          shellcheck --version
+          # setup-zsh.sh is a zsh script, which shellcheck does not parse.
+          shellcheck skill/terminal-title/scripts/*.sh skill/terminal-title/hooks/*.sh \
+            scripts/*.sh tests/*.sh install-and-test.sh uninstall.sh
+
+      - name: Shell tests
+        run: bash tests/run.sh
+
+      - name: Skill zip matches skill/ source
+        run: |
+          set -euo pipefail
+          tmp=$(mktemp -d)
+          unzip -q terminal-title.skill -d "$tmp/committed"
+          diff -r "$tmp/committed/terminal-title" skill/terminal-title
+          echo "terminal-title.skill is in sync with skill/"
