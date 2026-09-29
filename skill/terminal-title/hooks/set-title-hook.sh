@@ -18,21 +18,8 @@ MAX_TITLE_LENGTH=40
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SET_TITLE="${SCRIPT_DIR}/../scripts/set_title.sh"
 
-extract_prompt() {
+extract_prompt_fallback() {
     local payload="$1"
-    if command -v python3 >/dev/null 2>&1; then
-        printf '%s' "$payload" | python3 -c '
-import json, sys
-try:
-    data = json.load(sys.stdin)
-except Exception:
-    sys.exit(0)
-prompt = data.get("prompt", "") if isinstance(data, dict) else ""
-if isinstance(prompt, str):
-    sys.stdout.write(prompt)
-' 2>/dev/null
-        return
-    fi
     if command -v jq >/dev/null 2>&1; then
         printf '%s' "$payload" | jq -r 'if type == "object" then (.prompt // "") else "" end' 2>/dev/null
         return
@@ -52,19 +39,40 @@ make_title() {
         | sed -e 's/ *$//'
 }
 
-main() {
-    local payload prompt title
-    payload=$(cat 2>/dev/null || true)
-    [ -n "$payload" ] || return 0
+extract_title() {
+    local payload="$1"
+    if command -v python3 >/dev/null 2>&1; then
+        python3 -c '
+import json, sys
+try:
+    data = json.loads(sys.stdin.read())
+except Exception:
+    sys.exit(0)
+prompt = data.get("prompt", "") if isinstance(data, dict) else ""
+if not isinstance(prompt, str) or prompt.startswith("/"):
+    sys.exit(0)
+title = prompt.split("\n", 1)[0]
+title = "".join(char for char in title if not "\x00" <= char <= "\x1f")
+title = " ".join(title.split())
+sys.stdout.write(title[:40].rstrip(" "))
+' <<< "$payload" 2>/dev/null
+        return
+    fi
 
-    prompt=$(extract_prompt "$payload")
-    [ -n "$prompt" ] || return 0
-
+    local prompt
+    prompt=$(extract_prompt_fallback "$payload")
     case "$prompt" in
         /*) return 0 ;;
     esac
+    make_title "$prompt"
+}
 
-    title=$(make_title "$prompt")
+main() {
+    local payload title
+    payload=$(</dev/stdin)
+    [ -n "$payload" ] || return 0
+
+    title=$(extract_title "$payload")
     [ -n "$title" ] || return 0
 
     if [ -f "$SET_TITLE" ]; then
