@@ -85,18 +85,23 @@ payload='{"prompt":"   Investigate    why the   nightly    build fails on the ar
 printf '%s' "$payload" | bash "$HOOK"
 check "hook caps at 40 chars" "my-project | Investigate why the nightly build fails" "$(stored_title)"
 
-# 10. Hook: slash commands are ignored.
+# 10. Hook: title cleanup remains correct for tabs and carriage returns.
+payload='{"prompt":"  Build:\tDashboard\r\nIgnore this line"}'
+printf '%s' "$payload" | bash "$HOOK"
+check "hook removes control chars before setting title" "my-project | Build:Dashboard" "$(stored_title)"
+
+# 11. Hook: slash commands are ignored.
 CLAUDE_TITLE_OUTPUT="tty" bash "$SET_TITLE" "Before Slash"
 printf '%s' '{"prompt":"/compact"}' | bash "$HOOK"
 check "hook ignores slash commands" "my-project | Before Slash" "$(stored_title)"
 
-# 11. Hook: invalid JSON exits 0 and changes nothing.
+# 12. Hook: invalid JSON exits 0 and changes nothing.
 out=$(printf 'not json at all' | bash "$HOOK"); rc=$?
 check "hook invalid JSON exits 0" "0" "$rc"
 check "hook invalid JSON prints nothing" "" "$out"
 check "hook invalid JSON leaves title" "my-project | Before Slash" "$(stored_title)"
 
-# 12. Hook: empty stdin exits 0.
+# 13. Hook: empty stdin exits 0.
 out=$(bash "$HOOK" </dev/null); rc=$?
 check "hook empty stdin exits 0" "0" "$rc"
 
