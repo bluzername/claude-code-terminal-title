@@ -14,6 +14,10 @@ export HOME="${SANDBOX}/home"
 mkdir -p "$HOME" "${SANDBOX}/my-project"
 cd "${SANDBOX}/my-project"
 
+# Neutralize ambient Herdr env so each test controls it explicitly; otherwise
+# running inside a Herdr pane (HERDR_ENV=1 exported) would leak into every case.
+unset HERDR_ENV HERDR_PANE_ID HERDR_BIN_PATH
+
 TITLE_FILE="${HOME}/.claude/terminal_title"
 PASS=0
 FAIL=0
@@ -99,6 +103,40 @@ check "hook invalid JSON leaves title" "my-project | Before Slash" "$(stored_tit
 # 12. Hook: empty stdin exits 0.
 out=$(bash "$HOOK" </dev/null); rc=$?
 check "hook empty stdin exits 0" "0" "$rc"
+
+# 13. Herdr: under HERDR_ENV=1 with a stub `herdr` on PATH (via HERDR_BIN_PATH),
+#     the pane rename and report-metadata calls fire with the task title.
+HERDR_LOG="${SANDBOX}/herdr.log"
+HERDR_STUB="${SANDBOX}/herdr"
+cat > "$HERDR_STUB" <<EOF
+#!/bin/bash
+printf '%s\n' "\$*" >> "$HERDR_LOG"
+exit 0
+EOF
+chmod +x "$HERDR_STUB"
+
+rm -f "$HERDR_LOG"
+HERDR_ENV=1 HERDR_PANE_ID="pane-7" HERDR_BIN_PATH="$HERDR_STUB" \
+    CLAUDE_TITLE_OUTPUT="tty" bash "$SET_TITLE" "Ship: Herdr Pane"
+check "herdr title still stored" "my-project | Ship: Herdr Pane" "$(stored_title)"
+check "herdr pane rename invoked" \
+    "pane rename pane-7 Ship: Herdr Pane" \
+    "$(grep '^pane rename ' "$HERDR_LOG" 2>/dev/null || true)"
+check "herdr report-metadata invoked" "1" \
+    "$(grep -c '^pane report-metadata pane-7 .*--token task=Ship: Herdr Pane' "$HERDR_LOG" 2>/dev/null | tr -d ' ')"
+
+# 14. Herdr: without HERDR_ENV=1 the stub is never called (no-op path).
+rm -f "$HERDR_LOG"
+HERDR_PANE_ID="pane-7" HERDR_BIN_PATH="$HERDR_STUB" \
+    CLAUDE_TITLE_OUTPUT="tty" bash "$SET_TITLE" "No Herdr Here"
+check "no herdr call without HERDR_ENV" "missing" \
+    "$([ -f "$HERDR_LOG" ] && echo present || echo missing)"
+
+# 15. Herdr: a missing `herdr` binary never breaks the main title path.
+HERDR_ENV=1 HERDR_PANE_ID="pane-7" HERDR_BIN_PATH="${SANDBOX}/does-not-exist" \
+    CLAUDE_TITLE_OUTPUT="tty" bash "$SET_TITLE" "Herdr Absent: Still Fine"; rc=$?
+check "missing herdr exits 0" "0" "$rc"
+check "missing herdr still sets title" "my-project | Herdr Absent: Still Fine" "$(stored_title)"
 
 echo ""
 echo "passed: $PASS, failed: $FAIL"

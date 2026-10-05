@@ -138,6 +138,33 @@ bash ~/.claude/skills/terminal-title/scripts/set_title.sh "Review: PR 42"
 - `hooks/set-title-hook.sh` reads the hook JSON from stdin (python3, jq, or a sed fallback), takes the first line of `prompt`, collapses whitespace, caps it at 40 chars, and calls `set_title.sh`.
 - `setup-zsh.sh` installs an `update_terminal_cwd` override that re-emits the stored title on every prompt. A new shell adopts a stored title only if it is less than 5 minutes old, so stale titles do not leak into unrelated terminals.
 
+## Herdr
+
+[Herdr](https://herdr.dev) multiplexes Claude Code sessions into panes with a
+sidebar. Its official integrations report agent lifecycle state only, so the
+sidebar stays as a bare `claude` label while the outer terminal title updates.
+
+When `set_title.sh` runs with `HERDR_ENV=1` and `HERDR_PANE_ID` set (both are
+exported inside a Herdr pane), it also mirrors the task title into Herdr after
+setting the OSC terminal title:
+
+- `herdr pane rename <pane_id> <title>` — renames the pane to the task title.
+- `herdr pane report-metadata <pane_id> --source plugin:claude-code-terminal-title --title <title> --display-agent <title> --token task=<title> --ttl-ms 86400000`
+  — publishes the title metadata so the sidebar matches.
+
+Point the integration at a specific binary with `HERDR_BIN_PATH` (defaults to
+`herdr` on `PATH`). This path is **fail-open**: if `HERDR_ENV` is unset, the
+binary is missing, or a `herdr` call fails, the terminal title is still set and
+the exit code stays `0`. Non-Herdr sessions are completely unaffected.
+
+**Minimum Herdr version: 0.7.4.** The `--token`/`--clear-token` flags on
+`herdr pane report-metadata` were added in 0.7.4 (0.7.3 and earlier exposed
+`--custom-status` instead); `herdr pane rename` and the `--source` / `--title`
+/ `--display-agent` / `--ttl-ms` flags are present from that release onward.
+Verified against the [Herdr CLI reference](https://github.com/herdrdev/herdr/blob/master/docs/versions/0.7.4/website/src/content/docs/cli-reference.mdx)
+(latest at time of writing: 0.9.3). Older Herdr builds fail the `--token`
+call, which is swallowed by the fail-open guard.
+
 ## Compatibility
 
 | Terminal | Status |
