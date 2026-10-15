@@ -83,14 +83,17 @@ if [ "${HERDR_ENV:-}" = "1" ] && [ -n "${HERDR_PANE_ID:-}" ]; then
         PANE_TITLE="$FINAL_TITLE"
     fi
     PANE_TITLE=$(printf '%s' "$PANE_TITLE" | head -c 60)
+    # 24h default; callers can override without editing the script.
+    HERDR_METADATA_TTL_MS="${HERDR_METADATA_TTL_MS:-86400000}"
     if [ -n "$PANE_TITLE" ] && command -v "$HERDR_BIN" >/dev/null 2>&1; then
-        "$HERDR_BIN" pane rename "$HERDR_PANE_ID" "$PANE_TITLE" >/dev/null 2>&1 || true
+        # `--` so a title starting with `-` is not parsed as a flag.
+        "$HERDR_BIN" pane rename -- "$HERDR_PANE_ID" "$PANE_TITLE" >/dev/null 2>&1 || true
         "$HERDR_BIN" pane report-metadata "$HERDR_PANE_ID" \
             --source "plugin:claude-code-terminal-title" \
             --title "$PANE_TITLE" \
             --display-agent "$PANE_TITLE" \
             --token "task=$PANE_TITLE" \
-            --ttl-ms 86400000 >/dev/null 2>&1 || true
+            --ttl-ms "$HERDR_METADATA_TTL_MS" >/dev/null 2>&1 || true
     fi
 fi
 

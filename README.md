@@ -148,12 +148,14 @@ When `set_title.sh` runs with `HERDR_ENV=1` and `HERDR_PANE_ID` set (both are
 exported inside a Herdr pane), it also mirrors the task title into Herdr after
 setting the OSC terminal title:
 
-- `herdr pane rename <pane_id> <title>` — renames the pane to the task title.
-- `herdr pane report-metadata <pane_id> --source plugin:claude-code-terminal-title --title <title> --display-agent <title> --token task=<title> --ttl-ms 86400000`
+- `herdr pane rename -- <pane_id> <title>` — renames the pane to the task title
+  (`--` keeps a title that starts with `-` from being parsed as a flag).
+- `herdr pane report-metadata <pane_id> --source plugin:claude-code-terminal-title --title <title> --display-agent <title> --token task=<title> --ttl-ms <ttl>`
   — publishes the title metadata so the sidebar matches.
 
 Point the integration at a specific binary with `HERDR_BIN_PATH` (defaults to
-`herdr` on `PATH`). This path is **fail-open**: if `HERDR_ENV` is unset, the
+`herdr` on `PATH`). Metadata TTL defaults to 24h (`86400000` ms) and can be
+overridden with `HERDR_METADATA_TTL_MS`. This path is **fail-open**: if `HERDR_ENV` is unset, the
 binary is missing, or a `herdr` call fails, the terminal title is still set and
 the exit code stays `0`. Non-Herdr sessions are completely unaffected.
 

@@ -16,7 +16,7 @@ cd "${SANDBOX}/my-project"
 
 # Neutralize ambient Herdr env so each test controls it explicitly; otherwise
 # running inside a Herdr pane (HERDR_ENV=1 exported) would leak into every case.
-unset HERDR_ENV HERDR_PANE_ID HERDR_BIN_PATH
+unset HERDR_ENV HERDR_PANE_ID HERDR_BIN_PATH HERDR_METADATA_TTL_MS
 
 TITLE_FILE="${HOME}/.claude/terminal_title"
 PASS=0
@@ -120,7 +120,7 @@ HERDR_ENV=1 HERDR_PANE_ID="pane-7" HERDR_BIN_PATH="$HERDR_STUB" \
     CLAUDE_TITLE_OUTPUT="tty" bash "$SET_TITLE" "Ship: Herdr Pane"
 check "herdr title still stored" "my-project | Ship: Herdr Pane" "$(stored_title)"
 check "herdr pane rename invoked" \
-    "pane rename pane-7 Ship: Herdr Pane" \
+    "pane rename -- pane-7 Ship: Herdr Pane" \
     "$(grep '^pane rename ' "$HERDR_LOG" 2>/dev/null || true)"
 check "herdr report-metadata invoked" "1" \
     "$(grep -c '^pane report-metadata pane-7 .*--token task=Ship: Herdr Pane' "$HERDR_LOG" 2>/dev/null | tr -d ' ')"
