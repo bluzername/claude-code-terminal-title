@@ -5,7 +5,8 @@
 #
 # Resulting title formats:
 #   "<folder> | Your Title"
-#   "<prefix> | <folder> | Your Title"   when CLAUDE_TITLE_PREFIX is set
+#   "<prefix> | <folder> | Your Title"   when CODEX_TITLE_PREFIX or CLAUDE_TITLE_PREFIX
+#                                        is set (CODEX_TITLE_PREFIX wins when both are set)
 #
 # Behaviour:
 #   - exits 0 silently when no title is given (fail-safe)
@@ -31,8 +32,9 @@ fi
 
 FOLDER_NAME=$(basename "$PWD")
 PREFIX=""
-if [ -n "${CLAUDE_TITLE_PREFIX:-}" ]; then
-    PREFIX=$(sanitize "$CLAUDE_TITLE_PREFIX" 40)
+RAW_PREFIX="${CODEX_TITLE_PREFIX:-${CLAUDE_TITLE_PREFIX:-}}"
+if [ -n "$RAW_PREFIX" ]; then
+    PREFIX=$(sanitize "$RAW_PREFIX" 40)
 fi
 
 if [ -n "$PREFIX" ]; then

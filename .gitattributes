@@ -1,0 +1,4 @@
+# Keep LF in the repo and in working trees so the scripts run under bash and
+# the packaged terminal-title.skill matches skill/ byte for byte (CI checks it).
+* text=auto eol=lf
+*.skill binary
