@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - Unreleased
+
+### Added
+- `scripts/set_title.ps1`: native Windows support (Windows Terminal, conhost) via `[Console]::Title` / Win32 `SetConsoleTitle`, because Claude Code's Bash tool on Windows strips the OSC escape from subprocess stdout. Same title format, sanitising, caps and `~/.claude/terminal_title` file as `set_title.sh`; reads `UserPromptSubmit` JSON from stdin when called without an argument
+- `install-codex-powershell.ps1`: installs the skill for Codex on Windows PowerShell
+- `CODEX_TITLE_PREFIX`, which takes precedence over `CLAUDE_TITLE_PREFIX` in both scripts
+- `tests/run.ps1` and a Windows CI job that runs it under Windows PowerShell 5.1 and PowerShell 7
+
+### Changed
+- `SKILL.md` picks `set_title.sh` or `set_title.ps1` by host OS
+
 ## [1.3.0] - 2026-09-17
 
 ### Added

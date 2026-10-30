@@ -53,6 +53,10 @@ check "folder prefix" "my-project | Build: Dashboard UI" "$(stored_title)"
 CLAUDE_TITLE_PREFIX="Claude" CLAUDE_TITLE_OUTPUT="tty" bash "$SET_TITLE" "Fix: Login Bug"
 check "custom prefix" "Claude | my-project | Fix: Login Bug" "$(stored_title)"
 
+# 3b. CODEX_TITLE_PREFIX wins over CLAUDE_TITLE_PREFIX.
+CODEX_TITLE_PREFIX="Codex" CLAUDE_TITLE_PREFIX="Claude" CLAUDE_TITLE_OUTPUT="tty" bash "$SET_TITLE" "Fix: Login Bug"
+check "codex prefix wins" "Codex | my-project | Fix: Login Bug" "$(stored_title)"
+
 # 4. Control characters are stripped.
 CLAUDE_TITLE_OUTPUT="tty" bash "$SET_TITLE" "$(printf 'Debug:\tAuth\033[31m Flow')"
 check "control chars stripped" "my-project | Debug:Auth[31m Flow" "$(stored_title)"

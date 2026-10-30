@@ -31,3 +31,16 @@ jobs:
           unzip -q terminal-title.skill -d "$tmp/committed"
           diff -r "$tmp/committed/terminal-title" skill/terminal-title
           echo "terminal-title.skill is in sync with skill/"
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: PowerShell tests (PowerShell 7)
+        shell: pwsh
+        run: pwsh -NoProfile -File tests/run.ps1
+
+      - name: PowerShell tests (Windows PowerShell 5.1)
+        shell: pwsh
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests\run.ps1
